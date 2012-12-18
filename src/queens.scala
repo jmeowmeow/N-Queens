@@ -1,41 +1,27 @@
 class Board(val size: Int) {
-  def leftDiagonal(file: Int, rank: Int): Int = {
-    rank - file
-  }
-  def rightDiagonal(file: Int, rank: Int): Int = {
-    rank + file
-  }
-  
-  def isLegalAddition(queenRanks: Array[Int], lDiags: Array[Int], rDiags: Array[Int], file: Int, rank: Int):Boolean = {
-    //println("file %d, rank %d".format(file, rank))
- //   for (i <- 1 to queens.length-1) {print(queens(i)); print(" ")}; println
-    val rd = rightDiagonal(file, rank)
-    val ld = leftDiagonal(file, rank)
-    for (previousFile <- 1 to file-1) {
-      val previousRank = queenRanks(previousFile)
-      val prd = rDiags(previousFile)
-      val pld = lDiags(previousFile)
-      if (rank == previousRank || rd == prd || ld == pld) {
-        return false
-      }
-    }
-    true
-  }
   
   def placeQueen(file: Int, queenRanks: Array[Int], lDiags: Array[Int], rDiags: Array[Int]) : Option[Array[Int]] = {
-	  //    if (file == 0) {
-	  //      val limit = size + 1 / 2;
-	  //    } else {
-	  //      val limit = size;
-	  //    }
+    
 	  if (file > size) {
 		  Some(queenRanks)
 	  } else {
-		  for (rank <- 1 to size) {
-			  if (isLegalAddition(queenRanks, lDiags, rDiags, file, rank)) {
+		  for (rank <- 1 to size) yield {
+		        val rd = rank + file
+                val ld = rank - file
+                var isUnderAttack = false;
+		        var previousFile = 1;
+                while (!isUnderAttack && previousFile < file) {
+                  val previousRank = queenRanks(previousFile)
+                  val prd = rDiags(previousFile)
+                  val pld = lDiags(previousFile)
+                  isUnderAttack = (rank == previousRank || rd == prd || ld == pld);
+                  previousFile += 1;
+                }
+	        val isLegal = !isUnderAttack // isLegalAddition(queenRanks, lDiags, rDiags, file, rank)
+		    if (isLegal) {
 				  queenRanks(file) = rank
-				  lDiags(file) = leftDiagonal(file, rank)
-				  rDiags(file) = rightDiagonal(file, rank)
+				  lDiags(file) = rank - file
+				  rDiags(file) = rank + file
 				  val maybeSolution = placeQueen(file+1, queenRanks, lDiags, rDiags)
 				  if (maybeSolution != None) {
 				    return maybeSolution
@@ -112,7 +98,7 @@ object Queens extends App {
 
 // Production approach:
 // one queen per file
-// next try must be a previously unused rank
+// next try must be a previously unused rank (use a decimated list?)
 // next try checked to see if it's diagonal from another queen
 //   "previously unused left-diagonal and right-diagonal"
 // if all fail, go back to previous file and try another rank
