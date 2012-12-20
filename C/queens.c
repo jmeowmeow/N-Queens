@@ -67,22 +67,40 @@ void printBoard(int *qRanks, int n) {
 
 int main(int argc, char **argv) {
 
-  char numqueens[30];
+  char inputline[30];
 
   int nqueens = 0;
+  int firstRank = 1;
 
   if (argc < 2) {
     printf("Specify a small integer [0-99] defining the board size.\n");
-    char *result = gets(numqueens);
-    nqueens = atoi(result);
+    nqueens = atoi(gets(inputline));
+    printf("Optionally specify the rank of the queen on the first file [1-%d].\n", nqueens);
+    int fr = atoi(gets(inputline));
+    if (fr >= 1 && fr <= nqueens) {
+      firstRank = fr;
+    }
   } else {
     nqueens = atoi(argv[1]);
+    if (argc > 2) {
+      int fr = atoi(argv[2]);
+      if (fr >= 1 && fr <= nqueens) {
+        firstRank = fr;
+      }
+    }
   }
   printf("nqueens == %d\n", nqueens);
   int *qRanks = calloc(nqueens+1, sizeof(int));
   int *lDiags = calloc(nqueens+1, sizeof(int));
   int *rDiags = calloc(nqueens+1, sizeof(int));
-  int *solution = placeQueen(nqueens, 1, qRanks, lDiags, rDiags);
-  printBoard(qRanks, nqueens);
-  
+  int *solution;
+  if (firstRank <= 1) {
+    solution = placeQueen(nqueens, 1, qRanks, lDiags, rDiags);
+  } else {
+    qRanks[1] = firstRank;
+    lDiags[1] = firstRank - 1;
+    rDiags[1] = firstRank + 1;
+    solution = placeQueen(nqueens, 2, qRanks, lDiags, rDiags);
+  }
+  printBoard(solution, nqueens);
 }
