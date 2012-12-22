@@ -27,7 +27,9 @@ def placeQueen(size, file, ranks, ldiags, rdiags)
   if (file > size) 
     return ranks
   else
-    for rank in 1..size 
+    openRanks = (1..size).to_a - ranks.slice(1, file-1)
+    openRanks.shuffle!
+    for rank in openRanks
       if (isLegalAddition(ranks, ldiags, rdiags, file, rank)) 
         ranks[file] = rank
         ldiags[file] = rank - file
@@ -50,10 +52,12 @@ def solve(nFiles)
 end
 
 def printFileLabels(n)
-  for i in -2..n
-    if (i<10) then putc ' '  else print "#{i/10}" end
+  if (n>9)
+    for i in -2..n
+      if (i<10) then putc ' '  else print "#{i/10}" end
+    end
+    puts
   end
-  puts
   for i in -2..n
     if (i<1) then putc ' '  else print "#{i%10}" end
   end
@@ -93,6 +97,6 @@ nqueens = Integer(strQueens)
 startTime = Time.new
 solution = solve(nqueens)
 endTime = Time.new
-runTimeMillis = 1000 * (endTime - startTime)
+runTimeMillis = (1000000 * (endTime - startTime)).round / 1000.0
 printBoard(solution, nqueens)
 puts "Run time for #{nqueens} queens: #{runTimeMillis} msec"
