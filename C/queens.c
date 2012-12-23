@@ -13,12 +13,60 @@ int isLegalAddition(int *ranks, int *ldiags, int *rdiags, int file, int rank) {
   return (1 == 1);
 }
 
+void printDeck(char *msg, int *ranksToChoose, int n) {
+  int i;
+  puts(msg);
+  for (i=0; i<n; i++) {
+    printf(" %d", ranksToChoose[i]);
+  }
+  puts("");
+}
+
+int *shuffleOpenRanks(int *usedRanks, int size, int file) {
+/*  printf("UsedRanks[1] == %d, size == %d, file == %d\n", usedRanks[1], size, file); */
+  int nRanksLeft = size - file;
+  int *deck = calloc(nRanksLeft, sizeof(int));
+  int iDeck = 0;
+  /* Select */
+  int rank;
+  for (rank=1; rank<=size; rank++) {
+    int rankAlreadyUsed = 0;
+    int previousFile;
+    for (previousFile=1; previousFile<=size && rankAlreadyUsed == 0; previousFile++) {
+      if (usedRanks[previousFile] == rank) {
+        rankAlreadyUsed = 1;
+      }
+    }
+    if (rankAlreadyUsed == 0) {
+      deck[iDeck++] = rank;
+    }
+  }
+
+  /* printDeck("selected: ", deck, nRanksLeft); */
+
+  int i;
+  /* Shuffle */
+  for (i=0; i<nRanksLeft; i++) {
+    int other = random() % nRanksLeft;
+    int temp = deck[i];
+    deck[i] = deck[other];
+    deck[other] = temp;
+  }
+
+  /* printDeck("shuffled: ", deck, nRanksLeft); */
+  return deck;
+}
+
 int *placeQueen(int size, int file, int *ranks, int *ldiags, int *rdiags) {
   if (file > size) {
     return ranks;
   } else {
     int rank;
-    for (rank=1; rank<=size; rank++) {
+    int index;
+    int nRanksLeft = size - file + 1;
+    int *openRanks = shuffleOpenRanks(ranks, size, file);
+    for (index=0; index<nRanksLeft; index++) {
+      rank = openRanks[index];
       if (isLegalAddition(ranks, ldiags, rdiags, file, rank)) {
         ranks[file] = rank;
         ldiags[file] = rank - file;
@@ -67,10 +115,12 @@ void printBoard(int *qRanks, int n) {
 
 int main(int argc, char **argv) {
 
+  srandomdev();
+
   char inputline[30];
 
   int nqueens = 0;
-  int firstRank = 1;
+  int firstRank = 0;
 
   if (argc < 2) {
     printf("Specify a small integer [0-99] defining the board size.\n");
@@ -94,7 +144,7 @@ int main(int argc, char **argv) {
   int *lDiags = calloc(nqueens+1, sizeof(int));
   int *rDiags = calloc(nqueens+1, sizeof(int));
   int *solution;
-  if (firstRank <= 1) {
+  if (firstRank < 1 || firstRank > nqueens) {
     solution = placeQueen(nqueens, 1, qRanks, lDiags, rDiags);
   } else {
     qRanks[1] = firstRank;
