@@ -1,11 +1,32 @@
+/**
+ * Scala version of N-Queens solution.
+ * Calls out to Java Collections to shuffle the next-file candidates.
+ */
 class Board(val size: Int) {
+  
+  def shuffle(l:List[Int]): List[Int] = {
+    val lSize = l.size;
+    val javaList = new java.util.ArrayList[Int](lSize)
+    for (index <- 1 to lSize-1) {
+      javaList.add(l(index))
+    }
+    java.util.Collections.shuffle(javaList);
+    var shuffledList: List[Int] = Nil
+    for (index <- 0 to lSize-2) {
+      shuffledList = javaList.get(index) :: shuffledList
+    }
+    shuffledList = 0 :: shuffledList
+    shuffledList.toList
+  }
   
   def placeQueen(file: Int, queenRanks: Array[Int], lDiags: Array[Int], rDiags: Array[Int]) : Option[Array[Int]] = {
     
 	  if (file > size) {
 		  Some(queenRanks)
 	  } else {
-		  for (rank <- 1 to size) yield {
+	      val usedRanks = queenRanks.slice(1, file-1)
+	      val openRanks = ((1 to size).toList).filterNot((item) => usedRanks.contains(item))
+	      for (rank <- shuffle(openRanks) ) yield {
 		        val rd = rank + file
                 val ld = rank - file
                 var isUnderAttack = false;
@@ -17,7 +38,7 @@ class Board(val size: Int) {
                   isUnderAttack = (rank == previousRank || rd == prd || ld == pld);
                   previousFile += 1;
                 }
-	        val isLegal = !isUnderAttack // isLegalAddition(queenRanks, lDiags, rDiags, file, rank)
+	        val isLegal = !isUnderAttack
 		    if (isLegal) {
 				  queenRanks(file) = rank
 				  lDiags(file) = rank - file
